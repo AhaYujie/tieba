@@ -3,12 +3,11 @@ package online.ahayujie.project.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import online.ahayujie.project.core.Result;
-import online.ahayujie.project.core.ResultCode;
+import online.ahayujie.project.core.ResultCodeEnum;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,7 +28,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setHeader("Content-type", "application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         ObjectMapper objectMapper = new ObjectMapper();
-        response.getWriter().write(objectMapper.writeValueAsString(Result.fail(ResultCode.UNAUTHORIZED)));
+        response.getWriter().write(objectMapper.writeValueAsString(Result.fail(ResultCodeEnum.UNAUTHORIZED)));
     }
 
 }
