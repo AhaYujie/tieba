@@ -2,6 +2,7 @@ package online.ahayujie.project.security;
 
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import online.ahayujie.project.security.jwt.TokenProvider;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -24,14 +25,19 @@ import java.util.stream.Collectors;
 @Service
 public class JwtUserDetailServiceDefaultImpl implements JwtUserDetailService {
 
+    private final TokenProvider tokenProvider;
+
     private final PasswordEncoder passwordEncoder;
 
-    public JwtUserDetailServiceDefaultImpl(PasswordEncoder passwordEncoder) {
+    public JwtUserDetailServiceDefaultImpl(TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
+        this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public List<GrantedAuthority> getAuthorities(Claims claims) {
+    public List<GrantedAuthority> getAuthorities() {
+        String accessToken = "your accessToken";
+        Claims claims = tokenProvider.getClaimsFromAccessToken(accessToken);
         return Arrays.stream(claims.get("auth").toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());

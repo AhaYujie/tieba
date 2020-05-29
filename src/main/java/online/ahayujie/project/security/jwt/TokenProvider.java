@@ -98,7 +98,7 @@ public class TokenProvider implements InitializingBean {
      */
     public Authentication getAuthentication(String accessToken) {
         Claims claims = getClaimsFromAccessToken(accessToken);
-        Collection<? extends GrantedAuthority> authorities = jwtUserDetailService.getAuthorities(claims);
+        Collection<? extends GrantedAuthority> authorities = jwtUserDetailService.getAuthorities();
         User principal = new User(claims.getSubject(), "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, accessToken, authorities);
     }
@@ -150,7 +150,7 @@ public class TokenProvider implements InitializingBean {
      * @param accessToken jwt
      * @return 承载数据claims
      */
-    public static Claims getClaimsFromAccessToken(String accessToken) {
+    public Claims getClaimsFromAccessToken(String accessToken) {
         return Jwts.parserBuilder().setSigningKey(accessKey).build().parseClaimsJws(accessToken).getBody();
     }
 
@@ -159,7 +159,7 @@ public class TokenProvider implements InitializingBean {
      * @param refreshToken jwt
      * @return 承载数据claims
      */
-    public static Claims getClaimsFromRefreshToken(String refreshToken) {
+    public Claims getClaimsFromRefreshToken(String refreshToken) {
         return Jwts.parserBuilder().setSigningKey(refreshKey).build().parseClaimsJws(refreshToken).getBody();
     }
 

@@ -16,9 +16,8 @@ public interface JwtUserDetailService extends UserDetailsService {
 
     /**
      * 获取用户角色权限
-     * @param claims jwt承载数据
      * @return 用户角色权限
      */
-    List<GrantedAuthority> getAuthorities(Claims claims);
+    List<GrantedAuthority> getAuthorities();
 
 }
