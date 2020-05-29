@@ -33,7 +33,7 @@ public class CodeGenerator {
     private static final String JDBC_USERNAME = "root";
     private static final String JDBC_PASSWORD = "root";
     private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
-    private static final String TABLE_PREFIX = ""; //数据表前缀, 例如：数据表名称是foo_user, 设置这个参数为foo_, 则生成的model为User; 设置这个参数为空字符串, 则model为foo_user
+    private static final String TABLE_PREFIX = ""; //数据表前缀, 例如：数据表名称是foo_user, 设置这个参数为foo_, 则生成的model为User; 设置这个参数为空字符串, 则model为FooUser
 
     private static final String MAPPER_NAME = "%sMapper"; //mapper类名称 %s代表model类名
     private static final String SERVICE_NAME = "%sService"; //service类名, %s代表model类名
@@ -45,7 +45,7 @@ public class CodeGenerator {
     private static final boolean FILE_OVERRIDE = false; //是否覆盖已有文件
     private static final boolean SWAGGER_COMMENT = true; //是否使用swagger注释model类
     private static final boolean BASE_RESULT_MAPPER = true; //mapper.xml文件是否生成默认resultMap
-    private static final boolean LOMBOK_MODE = true; //是否使用lombok注释生成model类
+    private static final boolean LOMBOK_MODE = true; //是否使用lombok注解生成model类
     private static final DateType DATE_TYPE = DateType.ONLY_DATE; //model类的时间字段类型
     private static final IdType ID_TYPE = IdType.AUTO; //model类主键类型
 
