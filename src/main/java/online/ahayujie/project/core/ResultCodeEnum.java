@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
  * 响应码枚举，参考HTTP状态码的语义
  * @author aha
  */
-public enum ResultCode {
+public enum ResultCodeEnum {
 
     /**
      * 成功
@@ -37,7 +37,7 @@ public enum ResultCode {
 
     private final String message;
 
-    ResultCode(int code, String message) {
+    ResultCodeEnum(int code, String message) {
         this.code = code;
         this.message = message;
     }

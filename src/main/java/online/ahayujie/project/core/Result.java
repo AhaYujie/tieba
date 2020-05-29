@@ -29,56 +29,56 @@ public class Result<T> implements Serializable {
         this.data = data;
     }
 
-    private Result(ResultCode resultCode) {
-        this(resultCode.getCode(), resultCode.getMessage(), null);
+    private Result(ResultCodeEnum resultCodeEnum) {
+        this(resultCodeEnum.getCode(), resultCodeEnum.getMessage(), null);
     }
 
-    private Result(ResultCode resultCode, String message) {
-        this(resultCode.getCode(), message, null);
+    private Result(ResultCodeEnum resultCodeEnum, String message) {
+        this(resultCodeEnum.getCode(), message, null);
     }
 
-    private Result(ResultCode resultCode, String message, T data) {
-        this(resultCode.getCode(), message, data);
+    private Result(ResultCodeEnum resultCodeEnum, String message, T data) {
+        this(resultCodeEnum.getCode(), message, data);
     }
 
     public static <T> Result<T> success() {
-        return new Result<>(ResultCode.SUCCESS);
+        return new Result<>(ResultCodeEnum.SUCCESS);
     }
 
     public static <T> Result<T> success(String message) {
-        return new Result<>(ResultCode.SUCCESS, message);
+        return new Result<>(ResultCodeEnum.SUCCESS, message);
     }
 
     public static <T> Result<T> fail() {
-        return new Result<>(ResultCode.FAIL);
+        return new Result<>(ResultCodeEnum.FAIL);
     }
 
-    public static <T> Result<T> fail(ResultCode resultCode) {
-        return new Result<>(resultCode);
+    public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum) {
+        return new Result<>(resultCodeEnum);
     }
 
     public static <T> Result<T> fail(String message) {
-        return new Result<>(ResultCode.FAIL, message);
+        return new Result<>(ResultCodeEnum.FAIL, message);
     }
 
-    public static <T> Result<T> fail(ResultCode resultCode , String message) {
-        return new Result<>(resultCode, message);
+    public static <T> Result<T> fail(ResultCodeEnum resultCodeEnum, String message) {
+        return new Result<>(resultCodeEnum, message);
     }
 
     public static <T> Result<T> data(T data) {
-        return data(ResultCode.SUCCESS, data);
+        return data(ResultCodeEnum.SUCCESS, data);
     }
 
-    public static <T> Result<T> data(ResultCode resultCode, T data) {
-        return data(resultCode, resultCode.getMessage(), data);
+    public static <T> Result<T> data(ResultCodeEnum resultCodeEnum, T data) {
+        return data(resultCodeEnum, resultCodeEnum.getMessage(), data);
     }
 
     public static <T> Result<T> data(String message, T data) {
-        return data(ResultCode.SUCCESS, message, data);
+        return data(ResultCodeEnum.SUCCESS, message, data);
     }
 
-    public static <T> Result<T> data(ResultCode resultCode, String message, T data) {
-        return new Result<>(resultCode, data == null ? "暂无承载数据" : message, data);
+    public static <T> Result<T> data(ResultCodeEnum resultCodeEnum, String message, T data) {
+        return new Result<>(resultCodeEnum, data == null ? "暂无承载数据" : message, data);
     }
 
     public Integer getCode() {
