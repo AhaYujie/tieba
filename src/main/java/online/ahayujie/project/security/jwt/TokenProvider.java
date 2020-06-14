@@ -34,8 +34,8 @@ public class TokenProvider implements InitializingBean {
 
     private final JwtUserDetailService jwtUserDetailService;
 
-    private static Key accessKey;
-    private static Key refreshKey;
+    private Key accessKey;
+    private Key refreshKey;
 
     public TokenProvider(@Value("${jwt.base64-access-secret}") String base64AccessSecret,
                          @Value("${jwt.base64-refresh-secret}") String base64RefreshSecret,
@@ -98,7 +98,7 @@ public class TokenProvider implements InitializingBean {
      */
     public Authentication getAuthentication(String accessToken) {
         Claims claims = getClaimsFromAccessToken(accessToken);
-        Collection<? extends GrantedAuthority> authorities = jwtUserDetailService.getAuthorities();
+        Collection<? extends GrantedAuthority> authorities = jwtUserDetailService.getAuthorities(claims);
         User principal = new User(claims.getSubject(), "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, accessToken, authorities);
     }

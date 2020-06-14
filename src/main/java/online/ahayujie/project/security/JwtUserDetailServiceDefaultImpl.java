@@ -11,9 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,20 +22,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class JwtUserDetailServiceDefaultImpl implements JwtUserDetailService {
-
-    private final TokenProvider tokenProvider;
-
     private final PasswordEncoder passwordEncoder;
 
-    public JwtUserDetailServiceDefaultImpl(TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
-        this.tokenProvider = tokenProvider;
+    public JwtUserDetailServiceDefaultImpl(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public List<GrantedAuthority> getAuthorities() {
-        String accessToken = "your accessToken";
-        Claims claims = tokenProvider.getClaimsFromAccessToken(accessToken);
+    public Collection<GrantedAuthority> getAuthorities(Claims claims) {
         return Arrays.stream(claims.get("auth").toString().split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
@@ -48,7 +40,10 @@ public class JwtUserDetailServiceDefaultImpl implements JwtUserDetailService {
         if (!"aha".equals(username)) {
             throw new UsernameNotFoundException("用户不存在");
         }
-        return new User(username, passwordEncoder.encode("123456"), new ArrayList<>());
+        List<GrantedAuthority> authorityList = new ArrayList<>();
+        authorityList.add(new SimpleGrantedAuthority("admin"));
+        authorityList.add(new SimpleGrantedAuthority("guest"));
+        return new User(username, passwordEncoder.encode("123456"), authorityList);
     }
 
 }
