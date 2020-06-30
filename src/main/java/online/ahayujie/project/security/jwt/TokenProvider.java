@@ -27,8 +27,12 @@ import java.util.Map;
 @Component
 public class TokenProvider implements InitializingBean {
 
-    private final String base64AccessSecret;
-    private final String base64RefreshSecret;
+    @Value("${jwt.access-secret}")
+    private String accessSecret;
+
+    @Value("${jwt.refresh-secret}")
+    private String refreshSecret;
+
     private final Long accessTokenValidityInMilliseconds;
     private final Long refreshTokenValidityInMilliseconds;
 
@@ -37,13 +41,9 @@ public class TokenProvider implements InitializingBean {
     private Key accessKey;
     private Key refreshKey;
 
-    public TokenProvider(@Value("${jwt.base64-access-secret}") String base64AccessSecret,
-                         @Value("${jwt.base64-refresh-secret}") String base64RefreshSecret,
-                         @Value("${jwt.access-token-validity-in-seconds}") Long accessTokenValidityInSeconds,
+    public TokenProvider(@Value("${jwt.access-token-validity-in-seconds}") Long accessTokenValidityInSeconds,
                          @Value("${jwt.refresh-token-validity-in-seconds}") Long refreshTokenValidityInSeconds,
                          JwtUserDetailService jwtUserDetailService) {
-        this.base64AccessSecret = base64AccessSecret;
-        this.base64RefreshSecret = base64RefreshSecret;
         this.accessTokenValidityInMilliseconds = accessTokenValidityInSeconds * 1000;
         this.refreshTokenValidityInMilliseconds = refreshTokenValidityInSeconds * 1000;
         this.jwtUserDetailService = jwtUserDetailService;
@@ -51,10 +51,8 @@ public class TokenProvider implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        byte[] accessKeyBytes = Decoders.BASE64.decode(base64AccessSecret);
-        accessKey = Keys.hmacShaKeyFor(accessKeyBytes);
-        byte[] refreshKeyBytes = Decoders.BASE64.decode(base64RefreshSecret);
-        refreshKey = Keys.hmacShaKeyFor(refreshKeyBytes);
+        accessKey = Keys.hmacShaKeyFor(accessSecret.getBytes());
+        refreshKey = Keys.hmacShaKeyFor(refreshSecret.getBytes());
     }
 
     /**
