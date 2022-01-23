@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>online.ahayujie</groupId>
-    <artifactId>spring-boot-seed-project</artifactId>
+    <artifactId>tieba</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
@@ -103,6 +103,12 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.aliyun.oss</groupId>
+            <artifactId>aliyun-sdk-oss</artifactId>
+            <version>3.10.2</version>
         </dependency>
     </dependencies>
 
