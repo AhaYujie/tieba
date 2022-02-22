@@ -3,6 +3,7 @@ package online.ahayujie.project.controller;
 
 import io.swagger.annotations.ApiOperation;
 import online.ahayujie.project.bean.model.Blog;
+import online.ahayujie.project.bean.model.BlogReply;
 import online.ahayujie.project.bean.model.Comment;
 import online.ahayujie.project.core.Page;
 import online.ahayujie.project.core.Result;
@@ -62,5 +63,11 @@ public class BlogController {
     public Result<Page<Comment>> listComment(@RequestParam Long blogId, @RequestParam Long pageNum,
                                              @RequestParam Long pageSize) {
         return Result.data(blogService.listComment(blogId, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "回复评论")
+    @PostMapping(value = "/comment/reply")
+    public Result<BlogReply> replyComment(@RequestBody BlogReply reply) {
+        return Result.data(blogService.replyComment(reply));
     }
 }

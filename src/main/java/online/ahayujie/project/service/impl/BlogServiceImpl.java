@@ -3,16 +3,10 @@ package online.ahayujie.project.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import online.ahayujie.project.bean.model.Blog;
-import online.ahayujie.project.bean.model.Comment;
-import online.ahayujie.project.bean.model.Section;
-import online.ahayujie.project.bean.model.User;
+import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.core.Page;
 import online.ahayujie.project.exception.ApiException;
-import online.ahayujie.project.mapper.BlogMapper;
-import online.ahayujie.project.mapper.CommentMapper;
-import online.ahayujie.project.mapper.SectionMapper;
-import online.ahayujie.project.mapper.UserMapper;
+import online.ahayujie.project.mapper.*;
 import online.ahayujie.project.service.BlogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -32,11 +26,13 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
     private final UserMapper userMapper;
     private final SectionMapper sectionMapper;
     private final CommentMapper commentMapper;
+    private final BlogReplyMapper blogReplyMapper;
 
-    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper) {
+    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper) {
         this.userMapper = userMapper;
         this.sectionMapper = sectionMapper;
         this.commentMapper = commentMapper;
+        this.blogReplyMapper = blogReplyMapper;
     }
 
     @Override
@@ -92,5 +88,26 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         Wrapper<Comment> queryWrapper = new QueryWrapper<Comment>().eq("blog_id", blogId).orderByDesc("create_time");
         IPage<Comment> commentPage = commentMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), queryWrapper);
         return new Page<>(commentPage);
+    }
+
+    @Override
+    public BlogReply replyComment(BlogReply reply) {
+        Blog blog = baseMapper.selectById(reply.getBlogId());
+        if (blog == null) {
+            throw new ApiException("帖子不存在");
+        }
+        User user = userMapper.selectById(reply.getUserId());
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+        Comment comment = commentMapper.selectById(reply.getCommentId());
+        if (comment == null) {
+            throw new ApiException("评论不存在");
+        }
+        reply.setBlogTitle(blog.getTitle());
+        reply.setUsername(user.getUsername());
+        reply.setCreateTime(new Date());
+        blogReplyMapper.insert(reply);
+        return blogReplyMapper.selectById(reply.getId());
     }
 }

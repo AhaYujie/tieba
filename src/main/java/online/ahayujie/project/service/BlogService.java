@@ -2,6 +2,7 @@ package online.ahayujie.project.service;
 
 import online.ahayujie.project.bean.model.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
+import online.ahayujie.project.bean.model.BlogReply;
 import online.ahayujie.project.bean.model.Comment;
 import online.ahayujie.project.core.Page;
 
@@ -43,4 +44,11 @@ public interface BlogService extends IService<Blog> {
      * @return
      */
     Page<Comment> listComment(Long blogId, Long pageNum, Long pageSize);
+
+    /**
+     * 回复评论
+     * @param reply
+     * @return
+     */
+    BlogReply replyComment(BlogReply reply);
 }
