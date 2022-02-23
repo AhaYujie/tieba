@@ -2,10 +2,7 @@ package online.ahayujie.project.service;
 
 import lombok.extern.slf4j.Slf4j;
 import online.ahayujie.project.bean.model.*;
-import online.ahayujie.project.mapper.BlogMapper;
-import online.ahayujie.project.mapper.CommentMapper;
-import online.ahayujie.project.mapper.SectionMapper;
-import online.ahayujie.project.mapper.UserMapper;
+import online.ahayujie.project.mapper.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +24,8 @@ class BlogServiceTest {
     private BlogMapper blogMapper;
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private BlogReplyMapper blogReplyMapper;
 
     @Test
     void create() {
@@ -112,5 +111,26 @@ class BlogServiceTest {
         reply.setCommentId(comment.getId());
         reply.setContent("reply content");
         blogService.replyComment(reply);
+    }
+
+    @Test
+    void listReply() {
+        Blog blog = new Blog();
+        blog.setTitle("test");
+        blogMapper.insert(blog);
+        User user = new User();
+        user.setUsername("user for test");
+        user.setPassword("password for test");
+        userMapper.insert(user);
+        Comment comment = new Comment();
+        comment.setBlogId(blog.getId());
+        commentMapper.insert(comment);
+        BlogReply reply = new BlogReply();
+        reply.setBlogId(blog.getId());
+        reply.setUserId(user.getId());
+        reply.setCommentId(comment.getId());
+        reply.setContent("reply content");
+        blogReplyMapper.insert(reply);
+        blogService.listReply(comment.getId(), 1L, 10L);
     }
 }

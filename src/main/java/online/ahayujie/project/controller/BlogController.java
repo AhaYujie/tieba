@@ -70,4 +70,11 @@ public class BlogController {
     public Result<BlogReply> replyComment(@RequestBody BlogReply reply) {
         return Result.data(blogService.replyComment(reply));
     }
+
+    @ApiOperation(value = "获取回复")
+    @PostMapping(value = "/comment/reply/list")
+    public Result<Page<BlogReply>> listReply(@RequestParam Long commentId, @RequestParam Long pageNum,
+                                             @RequestParam Long pageSize) {
+        return Result.data(blogService.listReply(commentId, pageNum, pageSize));
+    }
 }

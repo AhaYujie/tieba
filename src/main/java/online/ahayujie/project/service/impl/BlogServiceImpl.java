@@ -110,4 +110,11 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         blogReplyMapper.insert(reply);
         return blogReplyMapper.selectById(reply.getId());
     }
+
+    @Override
+    public Page<BlogReply> listReply(Long commentId, Long pageNum, Long pageSize) {
+        Wrapper<BlogReply> wrapper = new QueryWrapper<BlogReply>().eq("comment_id", commentId).orderByDesc("create_time");
+        IPage<BlogReply> replyIPage = blogReplyMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(replyIPage);
+    }
 }
