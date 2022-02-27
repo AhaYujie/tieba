@@ -2,9 +2,11 @@ package online.ahayujie.project.controller;
 
 
 import io.swagger.annotations.ApiOperation;
+import online.ahayujie.project.bean.dto.MainPageDTO;
 import online.ahayujie.project.bean.dto.SectionCreateParam;
 import online.ahayujie.project.bean.dto.SectionUpdateParam;
 import online.ahayujie.project.bean.model.Section;
+import online.ahayujie.project.core.Page;
 import online.ahayujie.project.core.Result;
 import online.ahayujie.project.service.SectionService;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +56,12 @@ public class SectionController {
     @PostMapping(value = "/detail")
     public Result<Section> detail(@Valid @RequestParam Long id) {
         return Result.data(sectionService.getById(id));
+    }
+
+    @ApiOperation(value = "获取首页列表")
+    @PostMapping(value = "/main-page")
+    public Result<Page<MainPageDTO>> mainPage(@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        return Result.data(sectionService.getMainPage(pageNum, pageSize));
     }
 
 }

@@ -22,4 +22,8 @@ public class SectionCreateParam {
 
     @ApiModelProperty(value = "板块图标")
     private String icon;
+
+    @ApiModelProperty(value = "分类id", required = true)
+    @NotEmpty(message = "分类id不能为空")
+    private Long cateId;
 }

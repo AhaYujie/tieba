@@ -13,18 +13,18 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 论坛板块
+ * 板块分类
  * </p>
  *
  * @author aha
- * @since 2022-01-22
+ * @since 2022-02-27
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("section")
-@ApiModel(value="Section对象", description="论坛板块")
-public class Section implements Serializable {
+@TableName("section_cate")
+@ApiModel(value="SectionCate对象", description="板块分类")
+public class SectionCate implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -35,16 +35,14 @@ public class Section implements Serializable {
 
     private Date createTime;
 
-    @ApiModelProperty(value = "板块名称")
+    @ApiModelProperty(value = "名称")
     private String name;
 
-    @ApiModelProperty(value = "板块介绍")
+    @ApiModelProperty(value = "描述")
     private String description;
 
-    @ApiModelProperty(value = "板块图标")
+    @ApiModelProperty(value = "图标")
     private String icon;
 
 
-    @ApiModelProperty(value = "分类id")
-    private Long cateId;
 }
