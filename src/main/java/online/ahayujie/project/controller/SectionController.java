@@ -64,4 +64,11 @@ public class SectionController {
         return Result.data(sectionService.getMainPage(pageNum, pageSize));
     }
 
+    @ApiOperation(value = "获取分类下的板块")
+    @PostMapping(value = "/cate/list")
+    public Result<Page<Section>> getSectionByCate(@RequestParam Long cateId, @RequestParam Long pageNum,
+                                                  @RequestParam Long pageSize) {
+        return Result.data(sectionService.getSectionByCate(cateId, pageNum, pageSize));
+    }
+
 }

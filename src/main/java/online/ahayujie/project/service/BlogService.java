@@ -60,4 +60,13 @@ public interface BlogService extends IService<Blog> {
      * @return
      */
     Page<BlogReply> listReply(Long commentId, Long pageNum, Long pageSize);
+
+    /**
+     * 获取帖子列表
+     * @param sectionId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    Page<Blog> listBlog(Long sectionId, Long pageNum, Long pageSize);
 }

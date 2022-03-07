@@ -117,4 +117,11 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         IPage<BlogReply> replyIPage = blogReplyMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
         return new Page<>(replyIPage);
     }
+
+    @Override
+    public Page<Blog> listBlog(Long sectionId, Long pageNum, Long pageSize) {
+        Wrapper<Blog> wrapper = new QueryWrapper<Blog>().eq("section_id", sectionId).orderByDesc("update_time");
+        IPage<Blog> blogIPage = baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(blogIPage);
+    }
 }

@@ -7,11 +7,7 @@ import online.ahayujie.project.bean.model.Section;
 import online.ahayujie.project.bean.model.SectionCate;
 import online.ahayujie.project.core.Result;
 import online.ahayujie.project.service.SectionCateService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -45,5 +41,11 @@ public class SectionCateController {
     public Result<SectionCate> update(@RequestBody SectionCate sectionCate) {
         sectionCateService.updateById(sectionCate);
         return Result.data(sectionCateService.getById(sectionCate.getId()));
+    }
+
+    @ApiOperation(value = "获取板块分类")
+    @PostMapping(value = "/detail")
+    public Result<SectionCate> detail(@RequestParam Long id) {
+        return Result.data(sectionCateService.getById(id));
     }
 }

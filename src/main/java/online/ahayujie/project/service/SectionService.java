@@ -39,4 +39,12 @@ public interface SectionService extends IService<Section> {
      */
     Page<MainPageDTO> getMainPage(Long pageNum, Long pageSize);
 
+    /**
+     * 获取分类下的板块
+     * @param cateId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    Page<Section> getSectionByCate(Long cateId, Long pageNum, Long pageSize);
 }

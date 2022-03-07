@@ -77,4 +77,11 @@ public class BlogController {
                                              @RequestParam Long pageSize) {
         return Result.data(blogService.listReply(commentId, pageNum, pageSize));
     }
+
+    @ApiOperation(value = "获取帖子列表")
+    @PostMapping(value = "/list")
+    public Result<Page<Blog>> listBlog(@RequestParam Long sectionId, @RequestParam Long pageNum,
+                                       @RequestParam Long pageSize) {
+        return Result.data(blogService.listBlog(sectionId, pageNum, pageSize));
+    }
 }

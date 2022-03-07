@@ -133,4 +133,9 @@ class BlogServiceTest {
         blogReplyMapper.insert(reply);
         blogService.listReply(comment.getId(), 1L, 10L);
     }
+
+    @Test
+    void listBlog() {
+        blogService.listBlog(1L, 1L, 10L);
+    }
 }

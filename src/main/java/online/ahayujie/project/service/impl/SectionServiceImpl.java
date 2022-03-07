@@ -72,4 +72,11 @@ public class SectionServiceImpl extends ServiceImpl<SectionMapper, Section> impl
         }
         return new Page<>(pageNum, pageSize, page.getPages(), page.getTotal(), result);
     }
+
+    @Override
+    public Page<Section> getSectionByCate(Long cateId, Long pageNum, Long pageSize) {
+        Wrapper<Section> wrapper = new QueryWrapper<Section>().eq("cate_id", cateId);
+        IPage<Section> page = sectionMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(page);
+    }
 }
