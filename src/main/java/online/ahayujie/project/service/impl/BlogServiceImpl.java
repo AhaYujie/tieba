@@ -3,12 +3,14 @@ package online.ahayujie.project.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import lombok.extern.slf4j.Slf4j;
 import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.core.Page;
 import online.ahayujie.project.exception.ApiException;
 import online.ahayujie.project.mapper.*;
 import online.ahayujie.project.service.BlogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import online.ahayujie.project.service.CommonService;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -21,22 +23,28 @@ import java.util.Date;
  * @author aha
  * @since 2022-02-18
  */
+@Slf4j
 @Service
 public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements BlogService {
     private final UserMapper userMapper;
     private final SectionMapper sectionMapper;
     private final CommentMapper commentMapper;
     private final BlogReplyMapper blogReplyMapper;
+    private final CommonService commonService;
 
-    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper) {
+    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService) {
         this.userMapper = userMapper;
         this.sectionMapper = sectionMapper;
         this.commentMapper = commentMapper;
         this.blogReplyMapper = blogReplyMapper;
+        this.commonService = commonService;
     }
 
     @Override
     public Blog create(Blog blog) {
+        User user = commonService.getUserFromToken();
+        blog.setUserId(user.getId());
+        blog.setUsername(user.getUsername());
         checkBlog(blog);
         blog.setCreateTime(new Date());
         this.baseMapper.insert(blog);
@@ -68,13 +76,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     @Override
     public Comment postComment(Comment comment) {
+        User user = commonService.getUserFromToken();
+        comment.setUserId(user.getId());
+        comment.setUsername(user.getUsername());
         Blog blog = baseMapper.selectById(comment.getBlogId());
         if (blog == null) {
             throw new ApiException("帖子不存在");
-        }
-        User user = userMapper.selectById(comment.getUserId());
-        if (user == null) {
-            throw new ApiException("用户不存在");
         }
         comment.setBlogTitile(blog.getTitle());
         comment.setUsername(user.getUsername());
@@ -92,13 +99,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     @Override
     public BlogReply replyComment(BlogReply reply) {
+        User user = commonService.getUserFromToken();
+        reply.setUserId(user.getId());
+        reply.setUsername(user.getUsername());
         Blog blog = baseMapper.selectById(reply.getBlogId());
         if (blog == null) {
             throw new ApiException("帖子不存在");
-        }
-        User user = userMapper.selectById(reply.getUserId());
-        if (user == null) {
-            throw new ApiException("用户不存在");
         }
         Comment comment = commentMapper.selectById(reply.getCommentId());
         if (comment == null) {

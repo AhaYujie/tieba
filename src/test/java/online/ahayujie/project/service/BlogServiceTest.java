@@ -1,12 +1,22 @@
 package online.ahayujie.project.service;
 
 import lombok.extern.slf4j.Slf4j;
+import online.ahayujie.project.bean.dto.UserLoginDTO;
+import online.ahayujie.project.bean.dto.UserLoginParam;
 import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.mapper.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,9 +36,32 @@ class BlogServiceTest {
     private CommentMapper commentMapper;
     @Autowired
     private BlogReplyMapper blogReplyMapper;
+    @Autowired
+    private UserService userService;
+    @Value("${jwt.header}")
+    private String JWT_HEADER;
+    @Value("${jwt.header-prefix}")
+    private String JWT_HEADER_PREFIX;
+
+    @BeforeEach
+    void login() {
+        UserLoginParam param = new UserLoginParam();
+        param.setUsername("aha");
+        param.setPassword("123456");
+        UserLoginDTO loginDTO = userService.login(param);
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        assertNotNull(servletRequestAttributes);
+        HttpServletRequest request = servletRequestAttributes.getRequest();
+        MockHttpServletRequest mockHttpServletRequest = (MockHttpServletRequest) request;
+        mockHttpServletRequest.addHeader(JWT_HEADER, JWT_HEADER_PREFIX + loginDTO.getAccessToken());
+    }
 
     @Test
     void create() {
+        UserLoginParam param = new UserLoginParam();
+        param.setUsername("aha");
+        param.setPassword("123456");
+        userService.login(param);
         User user = new User();
         user.setUsername("user for test");
         user.setPassword("password for test");
@@ -47,6 +80,10 @@ class BlogServiceTest {
 
     @Test
     void update() {
+        UserLoginParam param = new UserLoginParam();
+        param.setUsername("aha");
+        param.setPassword("123456");
+        userService.login(param);
         Blog blog = new Blog();
         blog.setTitle("test");
         blogMapper.insert(blog);
@@ -67,6 +104,10 @@ class BlogServiceTest {
 
     @Test
     void postComment() {
+        UserLoginParam param = new UserLoginParam();
+        param.setUsername("aha");
+        param.setPassword("123456");
+        userService.login(param);
         Blog blog = new Blog();
         blog.setTitle("test");
         blogMapper.insert(blog);
