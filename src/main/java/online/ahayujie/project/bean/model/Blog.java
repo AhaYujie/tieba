@@ -56,5 +56,7 @@ public class Blog implements Serializable {
     @ApiModelProperty(value = "标签")
     private String tag;
 
+    @ApiModelProperty(value = "浏览数")
+    private Long views;
 
 }

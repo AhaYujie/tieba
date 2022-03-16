@@ -79,4 +79,10 @@ public class SectionServiceImpl extends ServiceImpl<SectionMapper, Section> impl
         IPage<Section> page = sectionMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
         return new Page<>(page);
     }
+
+    @Override
+    public List<Section> searchSection(String keyword) {
+        Wrapper<Section> wrapper = new QueryWrapper<Section>().like("name", keyword);
+        return sectionMapper.selectList(wrapper);
+    }
 }

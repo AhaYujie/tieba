@@ -12,6 +12,7 @@ import online.ahayujie.project.service.SectionService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * <p>
@@ -69,6 +70,12 @@ public class SectionController {
     public Result<Page<Section>> getSectionByCate(@RequestParam Long cateId, @RequestParam Long pageNum,
                                                   @RequestParam Long pageSize) {
         return Result.data(sectionService.getSectionByCate(cateId, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "搜索板块")
+    @PostMapping(value = "/search")
+    public Result<List<Section>> searchSection(@RequestParam(defaultValue = "") String keyword) {
+        return Result.data(sectionService.searchSection(keyword));
     }
 
 }

@@ -5,6 +5,7 @@ import online.ahayujie.project.bean.dto.UserLoginDTO;
 import online.ahayujie.project.bean.dto.UserLoginParam;
 import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.mapper.*;
+import online.ahayujie.project.repository.BlogEsRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,8 @@ class BlogServiceTest {
     private String JWT_HEADER;
     @Value("${jwt.header-prefix}")
     private String JWT_HEADER_PREFIX;
+    @Autowired
+    private BlogEsRepository blogEsRepository;
 
     @BeforeEach
     void login() {
@@ -179,4 +182,20 @@ class BlogServiceTest {
     void listBlog() {
         blogService.listBlog(1L, 1L, 10L);
     }
+
+    @Test
+    void getRank() {
+        blogService.getRank(1);
+        blogService.getRank(2);
+    }
+
+//    @Test
+//    void testEs() {
+//        EsBlog blog = new EsBlog();
+//        blog.setId(1L);
+//        blog.setTitle("title");
+//        blog.setContent("content");
+//        blogEsRepository.save(blog);
+//        System.out.println(blogEsRepository.findById(1L).toString());
+//    }
 }

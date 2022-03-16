@@ -5,10 +5,13 @@ import io.swagger.annotations.ApiOperation;
 import online.ahayujie.project.bean.model.Blog;
 import online.ahayujie.project.bean.model.BlogReply;
 import online.ahayujie.project.bean.model.Comment;
+import online.ahayujie.project.bean.model.EsBlog;
 import online.ahayujie.project.core.Page;
 import online.ahayujie.project.core.Result;
 import online.ahayujie.project.service.BlogService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <p>
@@ -30,7 +33,7 @@ public class BlogController {
     @ApiOperation(value = "获取帖子内容")
     @PostMapping(value = "/detail")
     public Result<Blog> detail(@RequestParam Long id) {
-        return Result.data(blogService.getById(id));
+        return Result.data(blogService.getBlogDetail(id));
     }
 
     @ApiOperation(value = "发表帖子")
@@ -48,7 +51,7 @@ public class BlogController {
     @ApiOperation(value = "删除帖子")
     @PostMapping(value = "/delete")
     public Result<Object> delete(@RequestParam Long id) {
-        blogService.removeById(id);
+        blogService.delete(id);
         return Result.success();
     }
 
@@ -83,5 +86,31 @@ public class BlogController {
     public Result<Page<Blog>> listBlog(@RequestParam Long sectionId, @RequestParam Long pageNum,
                                        @RequestParam Long pageSize) {
         return Result.data(blogService.listBlog(sectionId, pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "获取我的帖子列表")
+    @PostMapping(value = "/list/user")
+    public Result<Page<Blog>> listBlogByUser(@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        return Result.data(blogService.listBlogByUser(pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "搜索帖子")
+    @PostMapping(value = "search")
+    public Result<Page<EsBlog>> searchBlog(@RequestParam Integer pageNum, @RequestParam Integer pageSize,
+                                           @RequestParam String keyword) {
+        return Result.data(blogService.searchBlog(pageNum, pageSize, keyword));
+    }
+
+    @ApiOperation(value = "获取帖子榜单, sort=1为新帖榜单，sort=2为热帖榜单")
+    @PostMapping(value = "rank")
+    public Result<List<Blog>> getRank(@RequestParam Integer sort) {
+        return Result.data(blogService.getRank(sort));
+    }
+
+    @ApiOperation(value = "获取相似推荐")
+    @PostMapping(value = "/similar-recommend")
+    public Result<Page<EsBlog>> getSimilarRecommend(@RequestParam Integer pageNum, @RequestParam Integer pageSize,
+                                                  @RequestParam Long id) {
+        return Result.data(blogService.getSimilarRecommend(pageNum, pageSize, id));
     }
 }

@@ -7,6 +7,8 @@ import online.ahayujie.project.bean.model.Section;
 import com.baomidou.mybatisplus.extension.service.IService;
 import online.ahayujie.project.core.Page;
 
+import java.util.List;
+
 /**
  * <p>
  * 论坛板块 服务类
@@ -47,4 +49,11 @@ public interface SectionService extends IService<Section> {
      * @return
      */
     Page<Section> getSectionByCate(Long cateId, Long pageNum, Long pageSize);
+
+    /**
+     * 搜索板块
+     * @param keyword
+     * @return
+     */
+    List<Section> searchSection(String keyword);
 }

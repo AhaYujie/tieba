@@ -8,12 +8,26 @@ import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.core.Page;
 import online.ahayujie.project.exception.ApiException;
 import online.ahayujie.project.mapper.*;
+import online.ahayujie.project.repository.BlogEsRepository;
 import online.ahayujie.project.service.BlogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import online.ahayujie.project.service.CommonService;
+import org.elasticsearch.common.lucene.search.function.FunctionScoreQuery;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -31,13 +45,15 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
     private final CommentMapper commentMapper;
     private final BlogReplyMapper blogReplyMapper;
     private final CommonService commonService;
+    private final BlogEsRepository blogEsRepository;
 
-    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService) {
+    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService, BlogEsRepository blogEsRepository) {
         this.userMapper = userMapper;
         this.sectionMapper = sectionMapper;
         this.commentMapper = commentMapper;
         this.blogReplyMapper = blogReplyMapper;
         this.commonService = commonService;
+        this.blogEsRepository = blogEsRepository;
     }
 
     @Override
@@ -48,7 +64,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         checkBlog(blog);
         blog.setCreateTime(new Date());
         this.baseMapper.insert(blog);
-        return this.baseMapper.selectById(blog.getId());
+        blog = baseMapper.selectById(blog.getId());
+        blogEsRepository.save(getEsBlog(blog));
+        return blog;
     }
 
     @Override
@@ -56,9 +74,15 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         if (this.baseMapper.selectById(blog.getId()) == null) {
             throw new ApiException("帖子不存在");
         }
+        User user = commonService.getUserFromToken();
+        blog.setUserId(user.getId());
+        blog.setUsername(user.getUsername());
         checkBlog(blog);
+        blog.setViews(baseMapper.selectById(blog.getId()).getViews());
         this.baseMapper.updateById(blog);
-        return this.baseMapper.selectById(blog.getId());
+        blog = baseMapper.selectById(blog.getId());
+        blogEsRepository.save(getEsBlog(blog));
+        return blog;
     }
 
     private void checkBlog(Blog blog) {
@@ -129,5 +153,108 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         Wrapper<Blog> wrapper = new QueryWrapper<Blog>().eq("section_id", sectionId).orderByDesc("update_time");
         IPage<Blog> blogIPage = baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
         return new Page<>(blogIPage);
+    }
+
+    @Override
+    public Page<Blog> listBlogByUser(Long pageNum, Long pageSize) {
+        User user = commonService.getUserFromToken();
+        Wrapper<Blog> wrapper = new QueryWrapper<Blog>().eq("user_id", user.getId()).orderByDesc("update_time");
+        IPage<Blog> blogIPage = baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(blogIPage);
+    }
+
+    @Override
+    public void delete(Long id) {
+        removeById(id);
+        blogEsRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<EsBlog> searchBlog(Integer pageNum, Integer pageSize, String keyword) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        queryBuilder.withPageable(PageRequest.of(pageNum - 1, pageSize));
+        if (!StringUtils.isEmpty(keyword)) {
+            List<FunctionScoreQueryBuilder.FilterFunctionBuilder> builders = new ArrayList<>();
+            builders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                    QueryBuilders.matchQuery("title", keyword), ScoreFunctionBuilders.weightFactorFunction(50)));
+            builders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                    QueryBuilders.matchQuery("content", keyword), ScoreFunctionBuilders.weightFactorFunction(25)));
+            builders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                    QueryBuilders.matchQuery("tag", keyword), ScoreFunctionBuilders.weightFactorFunction(25)));
+            FunctionScoreQueryBuilder.FilterFunctionBuilder[] builderArray = new FunctionScoreQueryBuilder
+                    .FilterFunctionBuilder[builders.size()];
+            builders.toArray(builderArray);
+            queryBuilder.withQuery(QueryBuilders.functionScoreQuery(builderArray)
+                    .scoreMode(FunctionScoreQuery.ScoreMode.SUM)
+                    .setMinScore(2));
+        }
+        queryBuilder.withSort(SortBuilders.scoreSort().order(SortOrder.DESC));
+        org.springframework.data.domain.Page<EsBlog> page = blogEsRepository.search(queryBuilder.build());
+        return new Page<>((long) page.getNumber() + 1, (long) page.getSize(), (long) page.getTotalPages(),
+                page.getTotalElements(), page.getContent());
+    }
+
+    @Override
+    public List<Blog> getRank(Integer sort) {
+        Wrapper<Blog> wrapper;
+        if (sort == 1) {
+            wrapper = new QueryWrapper<Blog>().orderByDesc("create_time");
+        } else if (sort == 2) {
+            wrapper = new QueryWrapper<Blog>().orderByDesc("views");
+        } else {
+            return null;
+        }
+        return baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, 20), wrapper).getRecords();
+    }
+
+    @Override
+    public Blog getBlogDetail(Long id) {
+        Blog blog = baseMapper.selectById(id);
+        blog.setViews(blog.getViews() + 1);
+        baseMapper.updateById(blog);
+        return blog;
+    }
+
+    @Override
+    public Page<EsBlog> getSimilarRecommend(Integer pageNum, Integer pageSize, Long id) {
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        queryBuilder.withPageable(PageRequest.of(pageNum - 1, pageSize));
+        EsBlog esBlog = blogEsRepository.findById(id).orElse(null);
+        if (esBlog == null) {
+            return null;
+        }
+        List<FunctionScoreQueryBuilder.FilterFunctionBuilder> builders = new ArrayList<>();
+        if (esBlog.getTitle() != null) {
+            builders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                    QueryBuilders.matchQuery("title", esBlog.getTitle()), ScoreFunctionBuilders.weightFactorFunction(50)));
+        }
+        if (esBlog.getContent() != null) {
+            builders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                    QueryBuilders.matchQuery("content", esBlog.getContent()), ScoreFunctionBuilders.weightFactorFunction(25)));
+        }
+        if (esBlog.getTag() != null) {
+            builders.add(new FunctionScoreQueryBuilder.FilterFunctionBuilder(
+                    QueryBuilders.matchQuery("tag", esBlog.getTag()), ScoreFunctionBuilders.weightFactorFunction(50)));
+        }
+        FunctionScoreQueryBuilder.FilterFunctionBuilder[] builderArray = new FunctionScoreQueryBuilder
+                .FilterFunctionBuilder[builders.size()];
+        builders.toArray(builderArray);
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(builderArray)
+                .scoreMode(FunctionScoreQuery.ScoreMode.SUM)
+                .setMinScore(2);
+        queryBuilder.withQuery(functionScoreQueryBuilder);
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.mustNot(QueryBuilders.termQuery("id", esBlog.getId()));
+        queryBuilder.withFilter(boolQueryBuilder);
+        queryBuilder.withSort(SortBuilders.scoreSort().order(SortOrder.DESC));
+        org.springframework.data.domain.Page<EsBlog> page = blogEsRepository.search(queryBuilder.build());
+        return new Page<>((long) page.getNumber() + 1, (long) page.getSize(), (long) page.getTotalPages(),
+                page.getTotalElements(), page.getContent());
+    }
+
+    private EsBlog getEsBlog(Blog blog) {
+        EsBlog esBlog = new EsBlog();
+        BeanUtils.copyProperties(blog, esBlog);
+        return esBlog;
     }
 }

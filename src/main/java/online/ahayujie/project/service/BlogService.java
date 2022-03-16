@@ -4,7 +4,10 @@ import online.ahayujie.project.bean.model.Blog;
 import com.baomidou.mybatisplus.extension.service.IService;
 import online.ahayujie.project.bean.model.BlogReply;
 import online.ahayujie.project.bean.model.Comment;
+import online.ahayujie.project.bean.model.EsBlog;
 import online.ahayujie.project.core.Page;
+
+import java.util.List;
 
 /**
  * <p>
@@ -69,4 +72,50 @@ public interface BlogService extends IService<Blog> {
      * @return
      */
     Page<Blog> listBlog(Long sectionId, Long pageNum, Long pageSize);
+
+    /**
+     * 获取我的帖子列表
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    Page<Blog> listBlogByUser(Long pageNum, Long pageSize);
+
+    /**
+     * 删除
+     * @param id
+     */
+    void delete(Long id);
+
+    /**
+     * 搜索
+     * @param pageNum
+     * @param pageSize
+     * @param keyword
+     * @return
+     */
+    Page<EsBlog> searchBlog(Integer pageNum, Integer pageSize, String keyword);
+
+    /**
+     * 获取帖子榜单, sort=1为新帖榜单，sort=2为热帖榜单
+     * @param sort
+     * @return
+     */
+    List<Blog> getRank(Integer sort);
+
+    /**
+     * 获取帖子内容
+     * @param id
+     * @return
+     */
+    Blog getBlogDetail(Long id);
+
+    /**
+     * 获取相似推荐
+     * @param pageNum
+     * @param pageSize
+     * @param id
+     * @return
+     */
+    Page<EsBlog> getSimilarRecommend(Integer pageNum, Integer pageSize, Long id);
 }
