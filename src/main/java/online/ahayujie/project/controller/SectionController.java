@@ -78,4 +78,9 @@ public class SectionController {
         return Result.data(sectionService.searchSection(keyword));
     }
 
+    @ApiOperation(value = "分页获取板块")
+    @PostMapping(value = "/page")
+    public Result<Page<Section>> getSectionPage(@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        return Result.data(sectionService.getSectionPage(pageNum, pageSize));
+    }
 }

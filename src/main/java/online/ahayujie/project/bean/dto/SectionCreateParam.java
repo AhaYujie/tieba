@@ -14,7 +14,6 @@ import javax.validation.constraints.NotEmpty;
 @ApiModel(value = "论坛板块创建参数")
 public class SectionCreateParam {
     @ApiModelProperty(value = "板块名称", required = true)
-    @NotEmpty(message = "板块名称不能为空")
     private String name;
 
     @ApiModelProperty(value = "板块介绍")
@@ -24,6 +23,5 @@ public class SectionCreateParam {
     private String icon;
 
     @ApiModelProperty(value = "分类id", required = true)
-    @NotEmpty(message = "分类id不能为空")
     private Long cateId;
 }

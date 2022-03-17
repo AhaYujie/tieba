@@ -10,6 +10,7 @@ import online.ahayujie.project.service.SectionCateService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * <p>
@@ -47,5 +48,11 @@ public class SectionCateController {
     @PostMapping(value = "/detail")
     public Result<SectionCate> detail(@RequestParam Long id) {
         return Result.data(sectionCateService.getById(id));
+    }
+
+    @ApiOperation(value = "搜索板块分类")
+    @PostMapping(value = "/search")
+    public Result<List<SectionCate>> search(@RequestParam(defaultValue = "") String keyword) {
+        return Result.data(sectionCateService.search(keyword));
     }
 }

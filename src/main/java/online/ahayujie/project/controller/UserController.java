@@ -58,4 +58,10 @@ public class UserController {
         return Result.success("hello world");
     }
 
+    @ApiOperation(value = "是否是管理员")
+    @PostMapping(value = "/is-admin")
+    public Result<Boolean> isAdmin() {
+        return Result.data(userService.isAdmin());
+    }
+
 }

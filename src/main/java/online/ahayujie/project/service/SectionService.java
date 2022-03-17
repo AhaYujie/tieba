@@ -56,4 +56,12 @@ public interface SectionService extends IService<Section> {
      * @return
      */
     List<Section> searchSection(String keyword);
+
+    /**
+     * 分页获取板块
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    Page<Section> getSectionPage(Long pageNum, Long pageSize);
 }

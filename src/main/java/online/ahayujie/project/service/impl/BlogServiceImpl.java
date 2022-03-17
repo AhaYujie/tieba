@@ -3,6 +3,8 @@ package online.ahayujie.project.service.impl;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.core.Page;
@@ -22,9 +24,11 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,14 +50,18 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
     private final BlogReplyMapper blogReplyMapper;
     private final CommonService commonService;
     private final BlogEsRepository blogEsRepository;
+    private RedisTemplate<String, Serializable> redisTemplate;
 
-    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService, BlogEsRepository blogEsRepository) {
+    private static final String BLOG_REDIS_KEY = "blog.detail:%s:string";
+
+    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService, BlogEsRepository blogEsRepository, RedisTemplate<String, Serializable> redisTemplate) {
         this.userMapper = userMapper;
         this.sectionMapper = sectionMapper;
         this.commentMapper = commentMapper;
         this.blogReplyMapper = blogReplyMapper;
         this.commonService = commonService;
         this.blogEsRepository = blogEsRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -82,6 +90,8 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         this.baseMapper.updateById(blog);
         blog = baseMapper.selectById(blog.getId());
         blogEsRepository.save(getEsBlog(blog));
+        String key = String.format(BLOG_REDIS_KEY, blog.getId());
+        redisTemplate.delete(key);
         return blog;
     }
 
@@ -209,9 +219,21 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     @Override
     public Blog getBlogDetail(Long id) {
-        Blog blog = baseMapper.selectById(id);
-        blog.setViews(blog.getViews() + 1);
-        baseMapper.updateById(blog);
+        String key = String.format(BLOG_REDIS_KEY, id);
+        Serializable blogCache = redisTemplate.opsForValue().get(key);
+        Blog blog;
+        if (blogCache == null) {
+            blog = baseMapper.selectById(id);
+            if (blog == null) {
+                return null;
+            }
+            String blogJson = getBlogJson(blog).toString();
+            redisTemplate.opsForValue().set(key, blogJson);
+        } else {
+            log.info("getBlogDetail use cache");
+            blog = getBlogFromJson((String) blogCache);
+        }
+        baseMapper.updateView(id);
         return blog;
     }
 
@@ -256,5 +278,39 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         EsBlog esBlog = new EsBlog();
         BeanUtils.copyProperties(blog, esBlog);
         return esBlog;
+    }
+
+    private JsonObject getBlogJson(Blog blog) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", blog.getId());
+        jsonObject.addProperty("updateTime", blog.getUpdateTime().toString());
+        jsonObject.addProperty("createTime", blog.getCreateTime().toString());
+        jsonObject.addProperty("title", blog.getTitle());
+        jsonObject.addProperty("content", blog.getContent());
+        jsonObject.addProperty("userId", blog.getUserId());
+        jsonObject.addProperty("username", blog.getUsername());
+        jsonObject.addProperty("sectionId", blog.getSectionId());
+        jsonObject.addProperty("sectionName", blog.getSectionName());
+        jsonObject.addProperty("tag", blog.getTag());
+        jsonObject.addProperty("views", blog.getViews());
+        return jsonObject;
+    }
+
+    private Blog getBlogFromJson(String json) {
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+        Blog blog = new Blog();
+        blog.setId(jsonObject.get("id").getAsLong());
+        blog.setUpdateTime( new Date(jsonObject.get("updateTime").getAsString()));
+        blog.setCreateTime( new Date(jsonObject.get("createTime").getAsString()));
+        blog.setTitle(jsonObject.get("title").getAsString());
+        blog.setContent(jsonObject.get("content").getAsString());
+        blog.setUserId(jsonObject.get("userId").getAsLong());
+        blog.setUsername(jsonObject.get("username").getAsString());
+        blog.setSectionId(jsonObject.get("sectionId").getAsLong());
+        blog.setSectionName(jsonObject.get("sectionName").getAsString());
+        blog.setTag(jsonObject.get("tag").getAsString());
+        blog.setViews(jsonObject.get("views").getAsLong());
+        return blog;
     }
 }

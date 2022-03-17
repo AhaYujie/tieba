@@ -1,5 +1,7 @@
 package online.ahayujie.project.service;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import online.ahayujie.project.bean.dto.UserLoginDTO;
 import online.ahayujie.project.bean.dto.UserLoginParam;
@@ -12,12 +14,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.io.Serializable;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,6 +51,8 @@ class BlogServiceTest {
     private String JWT_HEADER_PREFIX;
     @Autowired
     private BlogEsRepository blogEsRepository;
+    @Autowired
+    private RedisTemplate<String, Serializable> redisTemplate;
 
     @BeforeEach
     void login() {
@@ -189,13 +197,23 @@ class BlogServiceTest {
         blogService.getRank(2);
     }
 
-//    @Test
-//    void testEs() {
-//        EsBlog blog = new EsBlog();
-//        blog.setId(1L);
-//        blog.setTitle("title");
-//        blog.setContent("content");
-//        blogEsRepository.save(blog);
-//        System.out.println(blogEsRepository.findById(1L).toString());
-//    }
+    @Test
+    void testEs() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("test", "aha");
+        jsonObject.addProperty("id", 1L);
+        jsonObject.addProperty("time", new Date().toString());
+        System.out.println(jsonObject.toString());
+        redisTemplate.opsForValue().set("test", jsonObject.toString());
+        String value = (String) redisTemplate.opsForValue().get("test");
+        Gson gson = new Gson();
+        JsonObject jsonObject1 = gson.fromJson(value, JsonObject.class);
+        System.out.println(value);
+        System.out.println(jsonObject1.toString());
+        System.out.println(redisTemplate.opsForValue().get("no"));
+        System.out.println(jsonObject1.get("id").getAsLong());
+        System.out.println(jsonObject1.get("test").getAsString());
+        System.out.println(jsonObject1.get("time"));
+        System.out.println(Date.parse(jsonObject1.get("time").getAsString()));
+    }
 }

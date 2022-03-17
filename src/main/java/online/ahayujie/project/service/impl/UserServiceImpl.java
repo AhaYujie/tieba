@@ -7,6 +7,7 @@ import online.ahayujie.project.bean.model.User;
 import online.ahayujie.project.exception.DuplicateUsernameException;
 import online.ahayujie.project.mapper.UserMapper;
 import online.ahayujie.project.security.jwt.TokenProvider;
+import online.ahayujie.project.service.CommonService;
 import online.ahayujie.project.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
@@ -36,11 +37,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final TokenProvider tokenProvider;
+    private final CommonService commonService;
 
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserMapper userMapper, TokenProvider tokenProvider) {
+    public UserServiceImpl(PasswordEncoder passwordEncoder, UserMapper userMapper, TokenProvider tokenProvider, CommonService commonService) {
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.tokenProvider = tokenProvider;
+        this.commonService = commonService;
     }
 
     @Override
@@ -74,5 +77,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Authentication authentication = tokenProvider.getAuthentication(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         return new UserLoginDTO(accessToken, refreshToken, tokenProvider.getAccessTokenValidityInSeconds());
+    }
+
+    @Override
+    public Boolean isAdmin() {
+        User user = commonService.getUserFromToken();
+        user = baseMapper.selectById(user.getId());
+        return user.getIsAdmin() == 1;
     }
 }

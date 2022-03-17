@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 @Mapper
 @Component
 public interface BlogMapper extends BaseMapper<Blog> {
-
+    Integer updateView(Long id);
 }

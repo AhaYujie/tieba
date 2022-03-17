@@ -17,4 +17,8 @@
         <result column="views" property="views" />
     </resultMap>
 
+    <update id="updateView">
+        update blog set views = views + 1 where id = #{id}
+    </update>
+
 </mapper>

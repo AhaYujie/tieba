@@ -85,4 +85,11 @@ public class SectionServiceImpl extends ServiceImpl<SectionMapper, Section> impl
         Wrapper<Section> wrapper = new QueryWrapper<Section>().like("name", keyword);
         return sectionMapper.selectList(wrapper);
     }
+
+    @Override
+    public Page<Section> getSectionPage(Long pageNum, Long pageSize) {
+        Wrapper<Section> wrapper = new QueryWrapper<>();
+        IPage<Section> page = sectionMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(page);
+    }
 }

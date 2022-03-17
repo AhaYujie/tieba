@@ -57,4 +57,9 @@ class SectionServiceTest {
     void getMainPage() {
         sectionService.getMainPage(1L, 10L);
     }
+
+    @Test
+    void getSectionPage() {
+        sectionService.getSectionPage(1L, 10L);
+    }
 }

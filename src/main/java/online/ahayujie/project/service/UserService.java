@@ -35,4 +35,10 @@ public interface UserService extends IService<User> {
      */
     UserLoginDTO login(UserLoginParam param) throws UsernameNotFoundException, BadCredentialsException;
 
+    /**
+     * 是否是管理员
+     * @return
+     */
+    Boolean isAdmin();
+
 }

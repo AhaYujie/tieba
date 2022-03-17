@@ -41,5 +41,6 @@ public class User implements Serializable {
     @ApiModelProperty(value = "密码")
     private String password;
 
-
+    @ApiModelProperty(value = "0为普通用户，1为管理员")
+    private Integer isAdmin;
 }
