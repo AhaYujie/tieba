@@ -118,4 +118,18 @@ public interface BlogService extends IService<Blog> {
      * @return
      */
     Page<EsBlog> getSimilarRecommend(Integer pageNum, Integer pageSize, Long id);
+
+    /**
+     * 获取全部帖子列表
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    Page<Blog> listAll(Long pageNum, Long pageSize);
+
+    /**
+     * 移动帖子到回收站
+     * @param id
+     */
+    void recycleBlog(Long id);
 }

@@ -1,10 +1,15 @@
 package online.ahayujie.project.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import online.ahayujie.project.bean.dto.UserLoginDTO;
 import online.ahayujie.project.bean.dto.UserLoginParam;
 import online.ahayujie.project.bean.dto.UserRegisterParam;
+import online.ahayujie.project.bean.model.Admin;
+import online.ahayujie.project.bean.model.Blog;
 import online.ahayujie.project.bean.model.User;
 import online.ahayujie.project.exception.DuplicateUsernameException;
+import online.ahayujie.project.mapper.AdminMapper;
 import online.ahayujie.project.mapper.UserMapper;
 import online.ahayujie.project.security.jwt.TokenProvider;
 import online.ahayujie.project.service.CommonService;
@@ -38,12 +43,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final UserMapper userMapper;
     private final TokenProvider tokenProvider;
     private final CommonService commonService;
+    private final AdminMapper adminMapper;
 
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserMapper userMapper, TokenProvider tokenProvider, CommonService commonService) {
+    public UserServiceImpl(PasswordEncoder passwordEncoder, UserMapper userMapper, TokenProvider tokenProvider, CommonService commonService, AdminMapper adminMapper) {
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.tokenProvider = tokenProvider;
         this.commonService = commonService;
+        this.adminMapper = adminMapper;
     }
 
     @Override
@@ -82,7 +89,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Boolean isAdmin() {
         User user = commonService.getUserFromToken();
-        user = baseMapper.selectById(user.getId());
-        return user.getIsAdmin() == 1;
+        Wrapper<Admin> wrapper = new QueryWrapper<Admin>().eq("user_id", user.getId());
+        Admin admin = adminMapper.selectOne(wrapper);
+        return admin != null && admin.getIsAdmin() == 1;
+    }
+
+    @Override
+    public void registerAdmin(UserRegisterParam param) throws DuplicateUsernameException {
+        User user = new User();
+        BeanUtils.copyProperties(param, user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setCreateTime(new Date());
+        try {
+            userMapper.insert(user);
+        } catch (DuplicateKeyException e) {
+            throw new DuplicateUsernameException(e);
+        }
+        Admin admin = new Admin();
+        admin.setCreateTime(new Date());
+        admin.setUserId(user.getId());
+        admin.setUsername(user.getUsername());
+        admin.setIsAdmin(1);
+        adminMapper.insert(admin);
+    }
+
+    @Override
+    public UserLoginDTO loginAdmin(UserLoginParam param) throws UsernameNotFoundException, BadCredentialsException {
+        User user = userMapper.selectByUsername(param.getUsername());
+        if (user == null) {
+            throw new UsernameNotFoundException("用户名不存在");
+        }
+        Wrapper<Admin> wrapper = new QueryWrapper<Admin>().eq("user_id", user.getId());
+        Admin admin = adminMapper.selectOne(wrapper);
+        if (admin == null || admin.getIsAdmin() != 1) {
+            throw new UsernameNotFoundException("管理员不存在");
+        }
+        return login(param);
     }
 }

@@ -216,4 +216,17 @@ class BlogServiceTest {
         System.out.println(jsonObject1.get("time"));
         System.out.println(Date.parse(jsonObject1.get("time").getAsString()));
     }
+
+    @Test
+    void listAll() {
+        blogService.listAll(1L, 10L);
+    }
+
+    @Test
+    void recycleBlog() {
+        Blog blog = new Blog();
+        blog.setTitle("for test");
+        blogMapper.insert(blog);
+        blogService.recycleBlog(blog.getId());
+    }
 }

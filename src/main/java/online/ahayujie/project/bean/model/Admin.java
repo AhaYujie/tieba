@@ -13,18 +13,18 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 用户
+ * 管理员
  * </p>
  *
  * @author aha
- * @since 2022-01-21
+ * @since 2022-03-20
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@TableName("user")
-@ApiModel(value="User对象", description="用户")
-public class User implements Serializable {
+@TableName("admin")
+@ApiModel(value="Admin对象", description="管理员")
+public class Admin implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -35,9 +35,14 @@ public class User implements Serializable {
 
     private Date createTime;
 
+    @ApiModelProperty(value = "用户id")
+    private Long userId;
+
     @ApiModelProperty(value = "用户名")
     private String username;
 
-    @ApiModelProperty(value = "密码")
-    private String password;
+    @ApiModelProperty(value = "是否管理员")
+    private Integer isAdmin;
+
+
 }

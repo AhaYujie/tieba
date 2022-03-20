@@ -57,6 +57,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/test/**").permitAll()
                 .antMatchers("/user/register").permitAll()
                 .antMatchers("/user/login").permitAll()
+                .antMatchers("/user/login/admin").permitAll()
+                .antMatchers("/user/register/admin").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .apply(jwtConfigurer);

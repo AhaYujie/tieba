@@ -50,11 +50,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
     private final BlogReplyMapper blogReplyMapper;
     private final CommonService commonService;
     private final BlogEsRepository blogEsRepository;
-    private RedisTemplate<String, Serializable> redisTemplate;
+    private final RedisTemplate<String, Serializable> redisTemplate;
+    private final BlogRecycleMapper blogRecycleMapper;
 
     private static final String BLOG_REDIS_KEY = "blog.detail:%s:string";
 
-    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService, BlogEsRepository blogEsRepository, RedisTemplate<String, Serializable> redisTemplate) {
+    public BlogServiceImpl(UserMapper userMapper, SectionMapper sectionMapper, CommentMapper commentMapper, BlogReplyMapper blogReplyMapper, CommonService commonService, BlogEsRepository blogEsRepository, RedisTemplate<String, Serializable> redisTemplate, BlogRecycleMapper blogRecycleMapper) {
         this.userMapper = userMapper;
         this.sectionMapper = sectionMapper;
         this.commentMapper = commentMapper;
@@ -62,6 +63,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         this.commonService = commonService;
         this.blogEsRepository = blogEsRepository;
         this.redisTemplate = redisTemplate;
+        this.blogRecycleMapper = blogRecycleMapper;
     }
 
     @Override
@@ -79,12 +81,12 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
 
     @Override
     public Blog update(Blog blog) {
-        if (this.baseMapper.selectById(blog.getId()) == null) {
+        Blog blogOld = baseMapper.selectById(blog.getId());
+        if (blogOld == null) {
             throw new ApiException("帖子不存在");
         }
-        User user = commonService.getUserFromToken();
-        blog.setUserId(user.getId());
-        blog.setUsername(user.getUsername());
+        blog.setUserId(blogOld.getUserId());
+        blog.setUsername(blogOld.getUsername());
         checkBlog(blog);
         blog.setViews(baseMapper.selectById(blog.getId()).getViews());
         this.baseMapper.updateById(blog);
@@ -272,6 +274,24 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         org.springframework.data.domain.Page<EsBlog> page = blogEsRepository.search(queryBuilder.build());
         return new Page<>((long) page.getNumber() + 1, (long) page.getSize(), (long) page.getTotalPages(),
                 page.getTotalElements(), page.getContent());
+    }
+
+    @Override
+    public Page<Blog> listAll(Long pageNum, Long pageSize) {
+        Wrapper<Blog> wrapper = new QueryWrapper<Blog>().orderByDesc("update_time");
+        IPage<Blog> blogIPage = baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(blogIPage);
+    }
+
+    @Override
+    public void recycleBlog(Long id) {
+        Blog blog = baseMapper.selectById(id);
+        removeById(id);
+        blogEsRepository.deleteById(id);
+        BlogRecycle blogRecycle = new BlogRecycle();
+        BeanUtils.copyProperties(blog, blogRecycle);
+        blogRecycle.setId(null);
+        blogRecycleMapper.insert(blogRecycle);
     }
 
     private EsBlog getEsBlog(Blog blog) {

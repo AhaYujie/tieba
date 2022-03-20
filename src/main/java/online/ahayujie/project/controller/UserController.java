@@ -64,4 +64,25 @@ public class UserController {
         return Result.data(userService.isAdmin());
     }
 
+    @ApiOperation(value = "管理员注册")
+    @PostMapping(value = "/register/admin")
+    public Result<Object> registerAdmin(@Valid @RequestBody UserRegisterParam param) {
+        try {
+            userService.registerAdmin(param);
+            return Result.success();
+        } catch (DuplicateUsernameException e) {
+            return Result.fail("用户名已存在");
+        }
+    }
+
+    @ApiOperation(value = "管理员登录")
+    @PostMapping(value = "/login/admin")
+    public Result<UserLoginDTO> loginAdmin(@Valid @RequestBody UserLoginParam param) {
+        try {
+            return Result.data(userService.loginAdmin(param));
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            return Result.fail("用户名或密码错误");
+        }
+    }
+
 }

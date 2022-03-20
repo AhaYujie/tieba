@@ -113,4 +113,17 @@ public class BlogController {
                                                   @RequestParam Long id) {
         return Result.data(blogService.getSimilarRecommend(pageNum, pageSize, id));
     }
+
+    @ApiOperation(value = "获取全部帖子列表")
+    @PostMapping(value = "/list/all")
+    public Result<Page<Blog>> listAll(@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        return Result.data(blogService.listAll(pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "移动帖子到回收站")
+    @PostMapping(value = "/recycle")
+    public Result<Object> recycleBlog(@RequestParam Long id) {
+        blogService.recycleBlog(id);
+        return Result.success();
+    }
 }

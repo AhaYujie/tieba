@@ -41,4 +41,20 @@ public interface UserService extends IService<User> {
      */
     Boolean isAdmin();
 
+    /**
+     * 管理员注册
+     * @param param
+     * @throws DuplicateUsernameException
+     */
+    void registerAdmin(UserRegisterParam param) throws DuplicateUsernameException;
+
+    /**
+     * 管理员登录
+     * @param param
+     * @return
+     * @throws UsernameNotFoundException
+     * @throws BadCredentialsException
+     */
+    UserLoginDTO loginAdmin(UserLoginParam param) throws UsernameNotFoundException, BadCredentialsException;
+
 }
