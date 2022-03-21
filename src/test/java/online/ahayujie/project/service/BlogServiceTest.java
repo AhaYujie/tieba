@@ -53,6 +53,8 @@ class BlogServiceTest {
     private BlogEsRepository blogEsRepository;
     @Autowired
     private RedisTemplate<String, Serializable> redisTemplate;
+    @Autowired
+    private BlogRecycleMapper blogRecycleMapper;
 
     @BeforeEach
     void login() {
@@ -228,5 +230,38 @@ class BlogServiceTest {
         blog.setTitle("for test");
         blogMapper.insert(blog);
         blogService.recycleBlog(blog.getId());
+    }
+
+    @Test
+    void repostBlog() {
+        UserLoginParam param = new UserLoginParam();
+        param.setUsername("aha");
+        param.setPassword("123456");
+        userService.login(param);
+        User user = new User();
+        user.setUsername("user for test");
+        user.setPassword("password for test");
+        userMapper.insert(user);
+        Section section = new Section();
+        section.setName("section for test");
+        sectionMapper.insert(section);
+        BlogRecycle blogRecycle = new BlogRecycle();
+        blogRecycle.setTitle("for test");
+        blogRecycle.setTitle("title");
+        blogRecycle.setContent("content");
+        blogRecycle.setUserId(user.getId());
+        blogRecycle.setSectionId(section.getId());
+        blogRecycle.setTag("test,aha");
+        blogRecycleMapper.insert(blogRecycle);
+        blogService.repostBlog(blogRecycle.getId());
+    }
+
+    @Test
+    void updateRecycleBlog() {
+        BlogRecycle blogRecycle = new BlogRecycle();
+        blogRecycle.setTitle("for tgest");
+        blogRecycleMapper.insert(blogRecycle);
+        blogRecycle.setContent("update once");
+        blogService.updateRecycleBlog(blogRecycle);
     }
 }

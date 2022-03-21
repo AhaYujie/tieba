@@ -1,10 +1,7 @@
 package online.ahayujie.project.service;
 
-import online.ahayujie.project.bean.model.Blog;
+import online.ahayujie.project.bean.model.*;
 import com.baomidou.mybatisplus.extension.service.IService;
-import online.ahayujie.project.bean.model.BlogReply;
-import online.ahayujie.project.bean.model.Comment;
-import online.ahayujie.project.bean.model.EsBlog;
 import online.ahayujie.project.core.Page;
 
 import java.util.List;
@@ -132,4 +129,24 @@ public interface BlogService extends IService<Blog> {
      * @param id
      */
     void recycleBlog(Long id);
+
+    /**
+     * 获取回收站的帖子
+     * @return
+     */
+    Page<BlogRecycle> getRecycleBlog(Long pageNum, Long pageSize);
+
+    /**
+     * 重新上架帖子
+     * @param id
+     * @return
+     */
+    Blog repostBlog(Long id);
+
+    /**
+     * 编辑回收站的帖子
+     * @param blogRecycle
+     * @return
+     */
+    BlogRecycle updateRecycleBlog(BlogRecycle blogRecycle);
 }

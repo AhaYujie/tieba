@@ -2,12 +2,10 @@ package online.ahayujie.project.controller;
 
 
 import io.swagger.annotations.ApiOperation;
-import online.ahayujie.project.bean.model.Blog;
-import online.ahayujie.project.bean.model.BlogReply;
-import online.ahayujie.project.bean.model.Comment;
-import online.ahayujie.project.bean.model.EsBlog;
+import online.ahayujie.project.bean.model.*;
 import online.ahayujie.project.core.Page;
 import online.ahayujie.project.core.Result;
+import online.ahayujie.project.service.BlogRecycleService;
 import online.ahayujie.project.service.BlogService;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +23,11 @@ import java.util.List;
 @RequestMapping("/blog")
 public class BlogController {
     private final BlogService blogService;
+    private final BlogRecycleService blogRecycleService;
 
-    public BlogController(BlogService blogService) {
+    public BlogController(BlogService blogService, BlogRecycleService blogRecycleService) {
         this.blogService = blogService;
+        this.blogRecycleService = blogRecycleService;
     }
 
     @ApiOperation(value = "获取帖子内容")
@@ -110,7 +110,7 @@ public class BlogController {
     @ApiOperation(value = "获取相似推荐")
     @PostMapping(value = "/similar-recommend")
     public Result<Page<EsBlog>> getSimilarRecommend(@RequestParam Integer pageNum, @RequestParam Integer pageSize,
-                                                  @RequestParam Long id) {
+                                                    @RequestParam Long id) {
         return Result.data(blogService.getSimilarRecommend(pageNum, pageSize, id));
     }
 
@@ -125,5 +125,36 @@ public class BlogController {
     public Result<Object> recycleBlog(@RequestParam Long id) {
         blogService.recycleBlog(id);
         return Result.success();
+    }
+
+    @ApiOperation(value = "获取回收站的帖子")
+    @PostMapping(value = "/recycle/list")
+    public Result<Page<BlogRecycle>> getRecycleBlog(@RequestParam Long pageNum, @RequestParam Long pageSize) {
+        return Result.data(blogService.getRecycleBlog(pageNum, pageSize));
+    }
+
+    @ApiOperation(value = "重新上架帖子")
+    @PostMapping(value = "/recycle/repost")
+    public Result<Blog> repostBlog(@RequestParam Long id) {
+        return Result.data(blogService.repostBlog(id));
+    }
+
+    @ApiOperation(value = "编辑回收站的帖子")
+    @PostMapping(value = "/recycle/update")
+    public Result<BlogRecycle> updateRecycleBlog(@RequestBody BlogRecycle blogRecycle) {
+        return Result.data(blogService.updateRecycleBlog(blogRecycle));
+    }
+
+    @ApiOperation(value = "删除回收站的帖子")
+    @PostMapping(value = "/recycle/delete")
+    public Result<Object> deleteRecycleBlog(@RequestParam Long id) {
+        blogRecycleService.removeById(id);
+        return Result.success();
+    }
+
+    @ApiOperation(value = "获取回收站的帖子详情")
+    @PostMapping(value = "/recycle/detail")
+    public Result<BlogRecycle> getRecycleBlogDetail(@RequestParam Long id) {
+        return Result.data(blogRecycleService.getById(id));
     }
 }

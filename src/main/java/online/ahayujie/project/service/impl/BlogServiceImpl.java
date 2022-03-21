@@ -294,6 +294,40 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements Bl
         blogRecycleMapper.insert(blogRecycle);
     }
 
+    @Override
+    public Page<BlogRecycle> getRecycleBlog(Long pageNum, Long pageSize) {
+        User user = commonService.getUserFromToken();
+        Wrapper<BlogRecycle> wrapper = new QueryWrapper<BlogRecycle>().eq("user_id", user.getId()).orderByDesc("update_time");
+        IPage<BlogRecycle> blogIPage = blogRecycleMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(pageNum, pageSize), wrapper);
+        return new Page<>(blogIPage);
+    }
+
+    @Override
+    public Blog repostBlog(Long id) {
+        BlogRecycle blogRecycle = blogRecycleMapper.selectById(id);
+        if (blogRecycle == null) {
+            return null;
+        }
+        Blog blog = new Blog();
+        BeanUtils.copyProperties(blogRecycle, blog);
+        blog.setId(null);
+        blog = create(blog);
+        blogRecycleMapper.deleteById(id);
+        return blog;
+    }
+
+    @Override
+    public BlogRecycle updateRecycleBlog(BlogRecycle blogRecycle) {
+        BlogRecycle oldBlog = blogRecycleMapper.selectById(blogRecycle.getId());
+        if (oldBlog == null) {
+            throw new ApiException("帖子不存在");
+        }
+        blogRecycle.setUserId(oldBlog.getUserId());
+        blogRecycle.setUsername(oldBlog.getUsername());
+        blogRecycleMapper.updateById(blogRecycle);
+        return blogRecycleMapper.selectById(blogRecycle.getId());
+    }
+
     private EsBlog getEsBlog(Blog blog) {
         EsBlog esBlog = new EsBlog();
         BeanUtils.copyProperties(blog, esBlog);
